@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mini Chat</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="title">
+        <h1>Mini Chat</h1>
+        <p class="sub">En ligne : <span id="onlineCount">0</span></p>
+      </div>
+
+      <div class="user">
+        <input id="username" type="text" placeholder="Ton pseudo..." maxlength="24" />
+        <button id="joinBtn">Rejoindre</button>
+      </div>
+    </header>
+
+    <main class="main">
+      <div id="messages" class="messages"></div>
+      <div id="typing" class="typing"></div>
+    </main>
+
+    <footer class="composer">
+      <form id="form">
+        <input id="input" autocomplete="off" placeholder="Écris un message..." maxlength="500" disabled />
+        <button id="sendBtn" type="submit" disabled>Envoyer</button>
+      </form>
+    </footer>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="client.js"></script>
+</body>
+</html>
