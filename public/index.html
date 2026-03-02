@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Chat</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="dot"></div>
+        <div>
+          <div class="brandTitle">Chat</div>
+          <div class="brandSub">en temps réel</div>
+        </div>
+      </div>
+
+      <div class="sectionTitle">Salons</div>
+      <div id="rooms" class="rooms"></div>
+
+      <div class="sectionTitle">Connectés</div>
+      <div id="users" class="users"></div>
+
+      <div class="footerHint">
+        <div class="kbd">/nick</div>
+        <div>pour changer de pseudo</div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="roomTitle">
+          <div class="hash">#</div>
+          <div>
+            <div id="roomName" class="roomName">general</div>
+            <div class="roomMeta">
+              <span id="roomCount">0</span> en ligne • <span id="status">déconnecté</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="joinBox">
+          <input id="username" type="text" placeholder="Pseudo (min 2)" maxlength="24" />
+          <button id="joinBtn">Rejoindre</button>
+        </div>
+      </header>
+
+      <section class="chat">
+        <div id="messages" class="messages"></div>
+        <div id="typing" class="typing"></div>
+      </section>
+
+      <footer class="composer">
+        <form id="form">
+          <input id="input" placeholder="Écris un message..." maxlength="500" disabled />
+          <button id="sendBtn" type="submit" disabled>Envoyer</button>
+        </form>
+        <div id="error" class="error"></div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="client.js"></script>
+</body>
+</html>
