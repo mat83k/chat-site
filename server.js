@@ -5,29 +5,45 @@ const { Server } = require("socket.io");
 
 const app = express();
 const server = http.createServer(app);
+
+// Socket.IO (same origin, pas besoin de config CORS spéciale ici)
 const io = new Server(server);
 
 const PORT = process.env.PORT || 3000;
 
-app.use(express.static(path.join(__dirname, "public")));
+// ---------- FRONT (public/) ----------
+const publicDir = path.join(__dirname, "public");
 
-// Petite mémoire en RAM (dernier historique)
-const history = [];
+// Sert tous les fichiers statiques (index.html, css, js, etc.)
+app.use(express.static(publicDir));
+
+// Route d'accueil "béton" (évite le fameux "Cannot GET /")
+app.get("/", (req, res) => {
+  res.sendFile(path.join(publicDir, "index.html"));
+});
+
+// Optionnel: petit endpoint pour vérifier que le serveur répond
+app.get("/health", (req, res) => {
+  res.status(200).send("ok");
+});
+
+// ---------- CHAT (mémoire RAM) ----------
+const history = []; // { username, msg, ts }
 const HISTORY_LIMIT = 50;
 
-// Liste des gens connectés
 const usersBySocket = new Map(); // socket.id -> { username }
 
-function sanitizeText(str) {
-  if (typeof str !== "string") return "";
-  return str.trim().slice(0, 500);
+function sanitizeText(value, maxLen) {
+  if (typeof value !== "string") return "";
+  return value.trim().slice(0, maxLen);
 }
 
 io.on("connection", (socket) => {
+  // envoie l'historique au nouvel arrivant
   socket.emit("history", history);
 
   socket.on("join", (rawUsername) => {
-    const username = sanitizeText(rawUsername) || "Anonyme";
+    const username = sanitizeText(rawUsername, 24) || "Anonyme";
     usersBySocket.set(socket.id, { username });
 
     socket.broadcast.emit("system", `${username} a rejoint le chat`);
@@ -35,11 +51,10 @@ io.on("connection", (socket) => {
   });
 
   socket.on("chatMessage", (rawMsg) => {
-    const msg = sanitizeText(rawMsg);
+    const msg = sanitizeText(rawMsg, 500);
     if (!msg) return;
 
-    const user = usersBySocket.get(socket.id);
-    const username = user?.username || "Anonyme";
+    const username = usersBySocket.get(socket.id)?.username || "Anonyme";
 
     const payload = {
       username,
@@ -54,16 +69,16 @@ io.on("connection", (socket) => {
   });
 
   socket.on("typing", (isTyping) => {
-    const user = usersBySocket.get(socket.id);
-    if (!user) return;
-    socket.broadcast.emit("typing", { username: user.username, isTyping: !!isTyping });
+    const username = usersBySocket.get(socket.id)?.username;
+    if (!username) return;
+    socket.broadcast.emit("typing", { username, isTyping: !!isTyping });
   });
 
   socket.on("disconnect", () => {
-    const user = usersBySocket.get(socket.id);
-    if (user) {
+    const username = usersBySocket.get(socket.id)?.username;
+    if (username) {
       usersBySocket.delete(socket.id);
-      socket.broadcast.emit("system", `${user.username} a quitté le chat`);
+      socket.broadcast.emit("system", `${username} a quitté le chat`);
     }
     io.emit("onlineCount", usersBySocket.size);
   });
